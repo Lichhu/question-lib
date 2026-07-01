@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>题库查询</title>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <div class="app">
+    <header class="header">
+      <h1>题库查询</h1>
+      <p class="subtitle" id="stats">加载中...</p>
+    </header>
+
+    <section class="search-bar">
+      <input
+        type="search"
+        id="searchInput"
+        placeholder="输入关键词搜索题目、选项、标签..."
+        autofocus
+      >
+      <button id="searchBtn" type="button">搜索</button>
+    </section>
+
+    <nav class="tabs" id="categoryTabs">
+      <button class="tab active" data-category="all">全部</button>
+      <button class="tab" data-category="java">Java</button>
+      <button class="tab" data-category="linux">Linux</button>
+      <button class="tab" data-category="sql">SQL</button>
+    </nav>
+
+    <main id="results" class="results"></main>
+
+    <footer class="pagination" id="pagination"></footer>
+  </div>
+
+  <script src="/app.js"></script>
+</body>
+</html>
