@@ -2,39 +2,104 @@
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>题库查询</title>
   <link rel="stylesheet" href="/style.css">
 </head>
 <body>
-  <div class="app">
+  <main class="app">
     <header class="header">
       <h1>题库查询</h1>
       <p class="subtitle" id="stats">加载中...</p>
     </header>
 
-    <section class="search-bar">
-      <input
-        type="search"
-        id="searchInput"
-        placeholder="输入关键词搜索题目、选项、标签..."
-        autofocus
-      >
-      <button id="searchBtn" type="button">搜索</button>
-    </section>
-
-    <nav class="tabs" id="categoryTabs">
-      <button class="tab active" data-category="all">全部</button>
-      <button class="tab" data-category="java">Java</button>
-      <button class="tab" data-category="linux">Linux</button>
-      <button class="tab" data-category="sql">SQL</button>
+    <nav class="workspace-tabs" aria-label="学习导航">
+      <button type="button" class="workspace-tab" data-view="search" aria-pressed="false">查题</button>
+      <button type="button" class="workspace-tab" data-view="learn" aria-pressed="false">专题学习</button>
+      <button type="button" class="workspace-tab active" data-view="practice" aria-pressed="true">刷题练习</button>
+      <button type="button" class="workspace-tab" data-view="mistakes" aria-pressed="false">错题本</button>
     </nav>
 
-    <main id="results" class="results"></main>
+    <section id="searchView" hidden aria-label="题库查询">
+      <section class="search-bar">
+        <input
+          type="search"
+          id="searchInput"
+          placeholder="输入关键词搜索题目、选项、标签..."
+          aria-label="搜索题目、选项、标签"
+        >
+        <button id="searchBtn" type="button">搜索</button>
+      </section>
 
-    <footer class="pagination" id="pagination"></footer>
-  </div>
+      <nav class="tabs" id="categoryTabs" aria-label="查题学科">
+        <button type="button" class="tab active" data-category="all">全部</button>
+        <button type="button" class="tab" data-category="java">Java</button>
+        <button type="button" class="tab" data-category="linux">Linux</button>
+        <button type="button" class="tab" data-category="sql">SQL</button>
+      </nav>
 
+      <div id="results" class="results"></div>
+
+      <footer class="pagination" id="pagination"></footer>
+    </section>
+
+    <section id="studyView" aria-label="学习工作区">
+      <p id="studyAlert" class="notice" role="alert" hidden></p>
+      <p id="storageStatus" class="notice" role="status" hidden></p>
+      <button id="reloadStudy" type="button" class="study-secondary" hidden>重新加载学习数据</button>
+      <div class="study-heading">
+        <div>
+          <p class="eyebrow">学习与练习</p>
+          <h2 id="studyTitle">专注做好每一道题</h2>
+          <p id="studyDescription" class="muted">先选范围，再作答。提交后查看解析，错题留给下一轮复习。</p>
+        </div>
+        <span class="local-badge">记录仅保存在当前浏览器</span>
+      </div>
+
+      <div class="study-metrics" aria-label="学习概况">
+        <div><span>已练题目（去重）</span><strong id="practicedCount">0</strong></div>
+        <div><span>累计作答正确率</span><strong id="accuracyCount">—</strong></div>
+        <div><span>待复习错题</span><strong id="mistakeCount">0</strong></div>
+      </div>
+
+      <div class="study-layout">
+        <details class="card study-filter" id="studyFilters">
+          <summary>练习范围 <span id="filterSummary">Java · 全部专题</span></summary>
+          <div class="filter-fields">
+            <label for="studyCategory">学科</label>
+            <select id="studyCategory">
+              <option value="java">Java</option>
+              <option value="linux">Linux</option>
+              <option value="sql">SQL</option>
+            </select>
+            <label for="studyTopic">知识专题</label>
+            <select id="studyTopic" disabled><option value="">全部专题</option></select>
+            <label for="studyTag">原始 tag</label>
+            <input id="tagSearch" type="search" placeholder="输入关键词筛选 tag" aria-label="筛选 tag 列表" disabled>
+            <select id="studyTag" disabled><option value="">全部 tag</option></select>
+            <label for="studyOrder">出题顺序</label>
+            <select id="studyOrder"><option value="sequential">顺序练习</option><option value="random">随机练习</option></select>
+            <p class="filter-note" id="scopeCount" aria-live="polite">正在读取题库范围…</p>
+            <button id="startPractice" type="button" class="study-primary" disabled>开始新一轮练习</button>
+            <button id="continueSession" type="button" class="study-secondary" hidden>继续上次练习</button>
+            <p class="filter-note">专题采用 tag 辅助关联，可能跨专题。更改筛选不会改变进行中的练习；点击开始才会新建一轮。</p>
+          </div>
+        </details>
+
+        <div class="study-content">
+          <section id="practicePane" class="card practice-card" aria-label="答题区" aria-busy="true"><p class="muted">正在恢复学习进度…</p></section>
+          <section id="learnPane" class="card reader-card" hidden aria-label="知识点阅读"></section>
+          <section id="mistakesPane" class="card" hidden aria-label="错题复习"></section>
+          <p class="storage-note">判分依据题库原答案，多选需全部选对且不多选；已标记疑题不计分。统计涵盖所有学科。记录仅保存在本浏览器，切换域名、协议、端口或清除网站数据会使用不同记录，不会跨设备同步。</p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <noscript>请启用 JavaScript 后使用查题与刷题功能。</noscript>
+  <script src="/study-content.js"></script>
+  <script src="/study-state.js"></script>
   <script src="/app.js"></script>
+  <script src="/study.js"></script>
 </body>
 </html>

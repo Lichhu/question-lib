@@ -5,8 +5,10 @@
   "scripts": {
     "build": "node scripts/build-data.js",
     "start": "node server.js",
-    "dev": "npm run build && npm start"
+    "dev": "npm run build && npm start",
+    "test": "node --test test/*.test.js"
   },
+  "engines": { "node": ">=20" },
   "keywords": [],
   "author": "",
   "license": "ISC",
