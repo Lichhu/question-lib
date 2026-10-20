@@ -9,7 +9,7 @@ const DATA_FILE = path.join(__dirname, 'data', 'questions.json');
 
 let questions = [];
 let study;
-let stats = { total: 0, java: 0, linux: 0, sql: 0 };
+let stats = { total: 0, java: 0, linux: 0, sql: 0, ai: 0 };
 
 function loadData() {
   if (!fs.existsSync(DATA_FILE)) {
@@ -23,8 +23,9 @@ function loadData() {
     java: questions.filter((q) => q.category === 'java').length,
     linux: questions.filter((q) => q.category === 'linux').length,
     sql: questions.filter((q) => q.category === 'sql').length,
+    ai: questions.filter((q) => q.category === 'ai').length,
   };
-  console.log(`已加载 ${stats.total} 题 (Java ${stats.java} / Linux ${stats.linux} / SQL ${stats.sql})`);
+  console.log(`已加载 ${stats.total} 题 (Java ${stats.java} / Linux ${stats.linux} / SQL ${stats.sql} / AI ${stats.ai})`);
 }
 
 function normalize(text) {

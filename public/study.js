@@ -3,7 +3,7 @@
   const $ = sel => document.querySelector(sel);
   const S = window.StudyState;
   const { escape: esc, markdown: md } = window.StudyContent;
-  const names = { java: 'Java', linux: 'Linux', sql: 'SQL' };
+  const names = { java: 'Java', linux: 'Linux', sql: 'SQL', ai: 'AI' };
   const kinds = { single: '单选题', multiple: '多选题', boolean: '判断题', review: '核对题 · 不计分' };
   const mobile = window.matchMedia('(max-width: 700px)');
   let data = S.defaults(), catalog = null, view = 'practice';

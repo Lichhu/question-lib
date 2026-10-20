@@ -56,10 +56,11 @@ test('单选、判断和缺失题型可用，题型矛盾及疑题仅供核对',
 test('全部题目都有专题入口，91 个专题及三科题量完整', () => {
   assert.equal(study.topics.size, 91);
   const entries = [...study.entries.values()];
-  assert.equal(entries.length, 12930);
+  assert.equal(entries.length, 13347);
   assert.equal(new Set(entries.map(e => e.question.id)).size, entries.length);
   for (const e of entries) {
-    assert.ok(e.topics.length, e.question.id);
+    // AI 暂无知识点总结文件，按设计没有专题入口，只核对判分。
+    if (e.question.category !== 'ai') assert.ok(e.topics.length, e.question.id);
     if (e.profile.kind !== 'review') assert.equal(gradeQuestion(e.question, e.profile, e.profile.expected).correct, true);
   }
   for (const [category, count, tags] of [['java', 7584, 2733], ['linux', 2008, 690], ['sql', 3338, 1072]]) {
@@ -176,7 +177,7 @@ test('顺序、随机队列不重复、不遗漏，范围正确且没有答案',
 });
 test('原有搜索、分类、分页和健康检查继续可用', async () => {
   const s = (await get('/api/stats')).body;
-  assert.equal(s.total, 12930);
+  assert.equal(s.total, 13347);
   assert.equal((await get('/api/health')).body.status, 'ok');
   const list = (await get('/api/search?category=sql&q=SELECT&page=1&limit=5')).body;
   assert.equal(list.items.length, 5);

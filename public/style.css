@@ -140,6 +140,7 @@ body {
 .badge.java { background: #fef3c7; color: #b45309; }
 .badge.linux { background: #ede9fe; color: #6d28d9; }
 .badge.sql { background: #dbeafe; color: #1d4ed8; }
+.badge.ai { background: #dcfce7; color: #15803d; }
 
 .question-text {
   flex: 1;

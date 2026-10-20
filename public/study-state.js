@@ -3,7 +3,7 @@
   const KEY = 'question-lib.study.v1';
   const idValid = id => typeof id === 'string' && /^\d+$/.test(id);
   const selectionValid = a => Array.isArray(a) && a.length <= 8 && a.every(k => /^[A-H]$/.test(k));
-  const filtersValid = f => f && ['java', 'linux', 'sql'].includes(f.category) && typeof f.topic === 'string' && typeof f.tag === 'string' && ['sequential', 'random'].includes(f.order);
+  const filtersValid = f => f && ['java', 'linux', 'sql', 'ai'].includes(f.category) && typeof f.topic === 'string' && typeof f.tag === 'string' && ['sequential', 'random'].includes(f.order);
   const defaults = () => ({ version: 1, records: {}, session: null, filters: { category: 'java', topic: '', tag: '', order: 'sequential' } });
 
   function restore(raw) {
@@ -12,7 +12,7 @@
     if (value?.version !== 1 || !value.records || typeof value.records !== 'object' || Array.isArray(value.records)) throw new Error('学习记录格式无效');
     const data = defaults();
     for (const [id, r] of Object.entries(value.records)) {
-      if (!idValid(id) || !r || !Number.isSafeInteger(r.attempts) || r.attempts < 1 || !Number.isSafeInteger(r.correctAttempts) || r.correctAttempts < 0 || r.correctAttempts > r.attempts || typeof r.lastCorrect !== 'boolean' || !selectionValid(r.selected) || !['java', 'linux', 'sql'].includes(r.category) || typeof r.tag !== 'string' || typeof r.lastAt !== 'number') throw new Error('作答记录损坏');
+      if (!idValid(id) || !r || !Number.isSafeInteger(r.attempts) || r.attempts < 1 || !Number.isSafeInteger(r.correctAttempts) || r.correctAttempts < 0 || r.correctAttempts > r.attempts || typeof r.lastCorrect !== 'boolean' || !selectionValid(r.selected) || !['java', 'linux', 'sql', 'ai'].includes(r.category) || typeof r.tag !== 'string' || typeof r.lastAt !== 'number') throw new Error('作答记录损坏');
       data.records[id] = r;
     }
     if (filtersValid(value.filters)) data.filters = value.filters;

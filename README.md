@@ -7,6 +7,7 @@
 - `java题目.xls` — Java 题目
 - `Linux题目..xls` — Linux 题目
 - `sql题目..xls` — SQL 题目
+- `ai.xls` — AI 题目
 
 ## 快速开始
 

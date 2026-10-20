@@ -25,7 +25,7 @@ async function loadStats() {
     const res = await fetch('/api/stats');
     if (!res.ok) throw new Error();
     const stats = await res.json();
-    $('#stats').textContent = `共 ${stats.total} 题 · Java ${stats.java} · Linux ${stats.linux} · SQL ${stats.sql}`;
+    $('#stats').textContent = `共 ${stats.total} 题 · Java ${stats.java} · Linux ${stats.linux} · SQL ${stats.sql} · AI ${stats.ai}`;
   } catch (_) { $('#stats').textContent = '统计暂不可用，请确认服务已启动。'; }
 }
 

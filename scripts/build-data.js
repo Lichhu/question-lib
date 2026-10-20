@@ -6,6 +6,7 @@ const SOURCES = [
   { file: 'java题目.xls', category: 'java', label: 'Java' },
   { file: 'Linux题目..xls', category: 'linux', label: 'Linux' },
   { file: 'sql题目..xls', category: 'sql', label: 'SQL' },
+  { file: 'ai.xls', category: 'ai', label: 'AI' },
 ];
 
 const OUT_DIR = path.join(__dirname, '..', 'data');
