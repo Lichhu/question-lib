@@ -53,14 +53,16 @@ test('单选、判断和缺失题型可用，题型矛盾及疑题仅供核对',
   assert.equal(gradeQuestion(fixture, p, []).correct, null);
   assert.throws(() => gradeQuestion(fixture, p, ['A']));
 });
-test('全部题目都有专题入口，91 个专题及三科题量完整', () => {
+test('全部题目可练习，91 个专题及三科题量完整', () => {
   assert.equal(study.topics.size, 91);
   const entries = [...study.entries.values()];
-  assert.equal(entries.length, 13347);
+  assert.equal(entries.length, 43095);
   assert.equal(new Set(entries.map(e => e.question.id)).size, entries.length);
+  const guided = new Set(['java', 'linux', 'sql']);
   for (const e of entries) {
-    // AI 暂无知识点总结文件，按设计没有专题入口，只核对判分。
-    if (e.question.category !== 'ai') assert.ok(e.topics.length, e.question.id);
+    // 只有 Java/Linux/SQL 有知识点总结；其余学科按设计没有专题入口，只核对判分。
+    if (guided.has(e.question.category)) assert.ok(e.topics.length, e.question.id);
+    else assert.equal(e.topics.length, 0, e.question.id);
     if (e.profile.kind !== 'review') assert.equal(gradeQuestion(e.question, e.profile, e.profile.expected).correct, true);
   }
   for (const [category, count, tags] of [['java', 7584, 2733], ['linux', 2008, 690], ['sql', 3338, 1072]]) {
@@ -68,6 +70,20 @@ test('全部题目都有专题入口，91 个专题及三科题量完整', () =>
     assert.equal(c.tags.length, tags);
     assert.equal(c.tags.reduce((sum, t) => sum + t.count, 0), count);
     for (const t of c.topics) assert.equal(study.filter({ category, topic: t.id }).length, t.count);
+  }
+});
+test('新增学科目录、题量与 tag 统计正确', () => {
+  const expected = { html: 5699, vue: 2184, ux: 1507, shell: 1663, network: 927, security: 1274,
+    server: 790, datacenter: 1853, database: 1283, vcs: 1000, scm: 998, testing: 1563,
+    business: 1777, product: 3112, requirement: 2470, project: 1587, risk: 61 };
+  for (const [category, count] of Object.entries(expected)) {
+    const c = study.catalog(category);
+    assert.equal(c.guideAvailable, false);
+    assert.equal(c.topics.length, 0);
+    assert.equal(c.tags.reduce((sum, t) => sum + t.count, 0), count);
+    assert.equal(study.filter({ category }).length, count);
+    const tag = c.tags.find(t => t.tag);
+    assert.equal(study.filter({ category, tag: tag.tag }).length, tag.count);
   }
 });
 test('摘要纠偏题不自动判分，正文不会包含附录', () => {
@@ -177,7 +193,10 @@ test('顺序、随机队列不重复、不遗漏，范围正确且没有答案',
 });
 test('原有搜索、分类、分页和健康检查继续可用', async () => {
   const s = (await get('/api/stats')).body;
-  assert.equal(s.total, 13347);
+  assert.equal(s.total, 43095);
+  assert.equal(s.subjects.length, 21);
+  assert.equal(s.subjects.reduce((sum, item) => sum + item.count, 0), 43095);
+  assert.equal((await get('/api/stats')).body.subjects.find(item => item.id === 'vue').label, 'Vue');
   assert.equal((await get('/api/health')).body.status, 'ok');
   const list = (await get('/api/search?category=sql&q=SELECT&page=1&limit=5')).body;
   assert.equal(list.items.length, 5);
@@ -186,6 +205,27 @@ test('原有搜索、分类、分页和健康检查继续可用', async () => {
   assert.equal(safe.limit, 20);
   assert.equal(safe.page, 1);
   assert.equal((await get('/api/question/10386')).body.answer, 'B');
+});
+test('新增学科可查询、组卷；问答题只对照参考答案不计分', async () => {
+  const list = (await get('/api/search?category=html&page=1&limit=3')).body;
+  assert.equal(list.total, 5699);
+  assert.equal(list.items.length, 3);
+  assert.ok(list.items.every(q => q.category === 'html'));
+
+  const queue = (await get('/api/practice/queue?category=risk')).body;
+  assert.equal(queue.total, 61);
+  assert.equal(queue.reviewOnly, 61);
+  const entry = [...study.entries.values()].find(e => e.question.category === 'risk');
+  assert.equal(entry.profile.kind, 'review');
+  assert.match(entry.profile.reason, /问答/);
+  const question = (await get(`/api/practice/question/${entry.question.id}`)).body;
+  assert.equal(question.kind, 'review');
+  assert.match(question.warning, /问答/);
+  assert.ok(!('answer' in question));
+  const graded = await post(`/api/practice/grade/${entry.question.id}`, { selected: [], revision: study.revision });
+  assert.equal(graded.body.correct, null);
+  assert.ok(graded.body.answer.length > 20);
+  assert.equal((await post(`/api/practice/grade/${entry.question.id}`, { selected: ['A'], revision: study.revision })).status, 400);
 });
 test('页面与本地资源可访问，H5 有视口设置且不依赖外部 CDN', async () => {
   const html = await (await fetch(base)).text();

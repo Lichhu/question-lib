@@ -1,14 +1,9 @@
 const fs = require('fs');
 const path = require('path');
 const XLSX = require('xlsx');
+const { SUBJECTS } = require('../lib/subjects');
 
-const SOURCES = [
-  { file: 'java题目.xls', category: 'java', label: 'Java' },
-  { file: 'Linux题目..xls', category: 'linux', label: 'Linux' },
-  { file: 'sql题目..xls', category: 'sql', label: 'SQL' },
-  { file: 'ai.xls', category: 'ai', label: 'AI' },
-];
-
+const SOURCE_DIR = path.join(__dirname, '..', 'sources');
 const OUT_DIR = path.join(__dirname, '..', 'data');
 const OUT_FILE = path.join(OUT_DIR, 'questions.json');
 
@@ -30,16 +25,20 @@ function parseSheet(filePath) {
 
 function main() {
   const all = [];
+  const seen = new Map();
 
-  for (const src of SOURCES) {
-    const filePath = path.join(__dirname, '..', src.file);
+  for (const src of SUBJECTS) {
+    const filePath = path.join(SOURCE_DIR, src.source);
     if (!fs.existsSync(filePath)) {
-      console.warn(`跳过缺失文件: ${src.file}`);
-      continue;
+      throw new Error(`缺少题库文件: sources/${src.source}（${src.label}）`);
     }
     const items = parseSheet(filePath);
     for (const item of items) {
-      all.push({ ...item, category: src.category, categoryLabel: src.label });
+      if (!item.id) throw new Error(`${src.label} 存在缺少 ID 的题目`);
+      const owner = seen.get(item.id);
+      if (owner) throw new Error(`题目 ID 重复: ${item.id}（${owner} / ${src.label}）`);
+      seen.set(item.id, src.label);
+      all.push({ ...item, category: src.id, categoryLabel: src.label });
     }
     console.log(`${src.label}: ${items.length} 题`);
   }

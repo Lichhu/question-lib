@@ -2,6 +2,7 @@ const fs = require('fs');
 const path = require('path');
 const express = require('express');
 const { createStudy, gradeQuestion } = require('./lib/study');
+const { SUBJECTS } = require('./lib/subjects');
 
 const PORT = process.env.PORT || 3456;
 const HOST = process.env.HOST || '0.0.0.0';
@@ -9,7 +10,8 @@ const DATA_FILE = path.join(__dirname, 'data', 'questions.json');
 
 let questions = [];
 let study;
-let stats = { total: 0, java: 0, linux: 0, sql: 0, ai: 0 };
+let searchIndex = new Map();
+let stats = { total: 0, subjects: [] };
 
 function loadData() {
   if (!fs.existsSync(DATA_FILE)) {
@@ -18,14 +20,16 @@ function loadData() {
   }
   questions = JSON.parse(fs.readFileSync(DATA_FILE, 'utf8'));
   study = createStudy(questions, __dirname);
+  searchIndex = new Map(questions.map((q) => [q.id, buildSearchText(q)]));
+  const counts = new Map(SUBJECTS.map((s) => [s.id, 0]));
+  for (const q of questions) {
+    if (counts.has(q.category)) counts.set(q.category, counts.get(q.category) + 1);
+  }
   stats = {
     total: questions.length,
-    java: questions.filter((q) => q.category === 'java').length,
-    linux: questions.filter((q) => q.category === 'linux').length,
-    sql: questions.filter((q) => q.category === 'sql').length,
-    ai: questions.filter((q) => q.category === 'ai').length,
+    subjects: SUBJECTS.map((s) => ({ id: s.id, label: s.label, count: counts.get(s.id) })),
   };
-  console.log(`已加载 ${stats.total} 题 (Java ${stats.java} / Linux ${stats.linux} / SQL ${stats.sql} / AI ${stats.ai})`);
+  console.log(`已加载 ${stats.total} 题（${SUBJECTS.length} 个学科）`);
 }
 
 function normalize(text) {
@@ -52,7 +56,7 @@ function searchQuestions({ q = '', category = 'all', page = 1, limit = 20 }) {
 
   if (keywords.length > 0) {
     filtered = filtered.filter((item) => {
-      const text = buildSearchText(item);
+      const text = searchIndex.get(item.id) || '';
       return keywords.every((kw) => text.includes(kw));
     });
   }

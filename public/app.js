@@ -25,8 +25,16 @@ async function loadStats() {
     const res = await fetch('/api/stats');
     if (!res.ok) throw new Error();
     const stats = await res.json();
-    $('#stats').textContent = `共 ${stats.total} 题 · Java ${stats.java} · Linux ${stats.linux} · SQL ${stats.sql} · AI ${stats.ai}`;
+    const subjects = Array.isArray(stats.subjects) ? stats.subjects : [];
+    $('#stats').textContent = `共 ${Number(stats.total).toLocaleString('zh-CN')} 题 · ${subjects.length} 个学科`;
+    renderCategoryTabs(subjects);
   } catch (_) { $('#stats').textContent = '统计暂不可用，请确认服务已启动。'; }
+}
+
+function renderCategoryTabs(subjects) {
+  const items = [{ id: 'all', label: '全部', count: null }, ...subjects];
+  $('#categoryTabs').innerHTML = items
+    .map((s) => `<button type="button" class="tab${s.id === state.category ? ' active' : ''}" data-category="${escapeHtml(s.id)}"${s.count === null ? '' : ` title="${escapeHtml(s.label)}：${s.count} 题"`}>${escapeHtml(s.label)}</button>`).join('');
 }
 
 async function doSearch() {
@@ -189,15 +197,15 @@ function init() {
     }
   });
 
-  $$('.tab').forEach((tab) => {
-    tab.addEventListener('click', () => {
-      $$('.tab').forEach((t) => t.classList.remove('active'));
-      tab.classList.add('active');
-      state.category = tab.dataset.category;
-      state.page = 1;
-      state.expanded.clear();
-      doSearch();
-    });
+  $('#categoryTabs').addEventListener('click', (e) => {
+    const tab = e.target.closest('.tab');
+    if (!tab) return;
+    $$('.tab').forEach((t) => t.classList.remove('active'));
+    tab.classList.add('active');
+    state.category = tab.dataset.category;
+    state.page = 1;
+    state.expanded.clear();
+    doSearch();
   });
 }
 

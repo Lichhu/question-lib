@@ -3,7 +3,7 @@
   const $ = sel => document.querySelector(sel);
   const S = window.StudyState;
   const { escape: esc, markdown: md } = window.StudyContent;
-  const names = { java: 'Java', linux: 'Linux', sql: 'SQL', ai: 'AI' };
+  const names = {};
   const kinds = { single: '单选题', multiple: '多选题', boolean: '判断题', review: '核对题 · 不计分' };
   const mobile = window.matchMedia('(max-width: 700px)');
   let data = S.defaults(), catalog = null, view = 'practice';
@@ -77,7 +77,7 @@
   function scope() {
     const f = data.filters;
     const topic = catalog?.topics.find(t => t.id === f.topic);
-    $('#filterSummary').textContent = `${names[f.category]} · ${topic ? topic.id : '全部专题'}`;
+    $('#filterSummary').textContent = `${names[f.category] || f.category} · ${topic ? topic.id : '全部专题'}`;
     const count = scopedTags().filter(t => !f.tag || t.tag === f.tag).reduce((n, t) => n + t.count, 0);
     $('#scopeCount').textContent = `当前范围 ${count} 道题${f.tag ? ` · ${f.tag}` : ''}`;
   }
@@ -89,6 +89,11 @@
       const next = await api(`/api/study/catalog?category=${encodeURIComponent(data.filters.category)}`);
       if (serial !== catalogSerial) return;
       catalog = next;
+      for (const s of next.subjects) names[s.id] = s.label;
+      const categorySelect = $('#studyCategory');
+      if (categorySelect.options.length !== next.subjects.length) {
+        categorySelect.innerHTML = next.subjects.map(s => `<option value="${esc(s.id)}">${esc(s.label)}（${s.count}）</option>`).join('');
+      }
       if (!catalog.topics.some(t => t.id === data.filters.topic)) data.filters.topic = '';
       if (!scopedTags().some(t => t.tag === data.filters.tag)) data.filters.tag = '';
       $('#studyCategory').value = data.filters.category;
@@ -243,11 +248,11 @@
     $('#learnPane').innerHTML = '<p class="muted" role="status">正在加载知识点…</p>';
     try {
       if (!topic) {
-        $('#learnPane').innerHTML = `<h3>${names[subject.category]} 专题目录</h3><p class="filter-note">${esc(subject.mappingNote)}</p><div class="topic-list">${subject.topics.map(t => `<button type="button" class="topic-link" data-topic="${t.id}" data-category="${t.category}"><span><strong>${t.id}</strong> ${esc(t.title)}</span><small>${t.count} 道关联题</small></button>`).join('')}</div>${!subject.guideAvailable ? '<p>未找到该学科总结文件，可继续按 tag 刷题。</p>' : `<details class="reading-scope"><summary>数据范围与复习方法</summary><div class="rich-text">${md(subject.introduction)}</div></details>`}`;
+        $('#learnPane').innerHTML = `<h3>${esc(names[subject.category] || subject.category)} 专题目录</h3><p class="filter-note">${esc(subject.mappingNote)}</p><div class="topic-list">${subject.topics.map(t => `<button type="button" class="topic-link" data-topic="${t.id}" data-category="${t.category}"><span><strong>${t.id}</strong> ${esc(t.title)}</span><small>${t.count} 道关联题</small></button>`).join('')}</div>${!subject.guideAvailable ? '<p>该学科暂无知识点总结，可在左侧「练习范围」按 tag 选择后直接刷题。</p>' : `<details class="reading-scope"><summary>数据范围与复习方法</summary><div class="rich-text">${md(subject.introduction)}</div></details>`}`;
       } else {
         const t = await api(`/api/study/topic/${topic}`);
         if (serial !== readerSerial) return;
-        $('#learnPane').innerHTML = `<p class="eyebrow">${names[t.category]} · ${t.id} · ${t.count} 道关联题</p><h3>${esc(t.title)}</h3><div class="inline-actions">${button('练习当前范围', 'start')}${button('返回专题目录', 'topic-list', true)}</div><p class="filter-note">${esc(subject.mappingNote)}</p><div class="rich-text lesson-body">${md(t.markdown)}</div>${button('开始练习', 'start')}`;
+        $('#learnPane').innerHTML = `<p class="eyebrow">${names[t.category] || t.category} · ${t.id} · ${t.count} 道关联题</p><h3>${esc(t.title)}</h3><div class="inline-actions">${button('练习当前范围', 'start')}${button('返回专题目录', 'topic-list', true)}</div><p class="filter-note">${esc(subject.mappingNote)}</p><div class="rich-text lesson-body">${md(t.markdown)}</div>${button('开始练习', 'start')}`;
       }
       controls();
     } catch (error) { if (serial === readerSerial) panelError('#learnPane', error, 'retry-reader'); }

@@ -82,10 +82,15 @@ body {
   display: flex;
   gap: 8px;
   margin-bottom: 16px;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  padding-bottom: 6px;
+  scrollbar-width: thin;
+  -webkit-overflow-scrolling: touch;
 }
 
 .tab {
+  flex: 0 0 auto;
   padding: 8px 16px;
   border: 1px solid var(--border);
   border-radius: 999px;
@@ -141,6 +146,23 @@ body {
 .badge.linux { background: #ede9fe; color: #6d28d9; }
 .badge.sql { background: #dbeafe; color: #1d4ed8; }
 .badge.ai { background: #dcfce7; color: #15803d; }
+.badge.html { background: #ffedd5; color: #c2410c; }
+.badge.vue { background: #d1fae5; color: #047857; }
+.badge.ux { background: #fce7f3; color: #be185d; }
+.badge.shell { background: #e0e7ff; color: #4338ca; }
+.badge.network { background: #cffafe; color: #0e7490; }
+.badge.security { background: #fee2e2; color: #b91c1c; }
+.badge.server { background: #f1f5f9; color: #475569; }
+.badge.datacenter { background: #ecfccb; color: #4d7c0f; }
+.badge.database { background: #ccfbf1; color: #0f766e; }
+.badge.vcs { background: #fae8ff; color: #a21caf; }
+.badge.scm { background: #e0f2fe; color: #0369a1; }
+.badge.testing { background: #fef9c3; color: #a16207; }
+.badge.business { background: #fde68a; color: #92400e; }
+.badge.product { background: #ffe4e6; color: #be123c; }
+.badge.requirement { background: #e9d5ff; color: #7e22ce; }
+.badge.project { background: #d1fae5; color: #065f46; }
+.badge.risk { background: #fee2e2; color: #991b1b; }
 
 .question-text {
   flex: 1;
